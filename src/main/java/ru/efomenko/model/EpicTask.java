@@ -1,14 +1,12 @@
 package ru.efomenko.model;
 
-import ru.efomenko.Main;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class EpicTask extends Task {
 
-    List<Long> subTaskIdList;
-    public EpicTask( String name, String text, Main.STATUS status) {
+    private final List<Long> subTaskIdList;
+    public EpicTask( String name, String text, Status.STATUS status) {
         super(name, text,status);
         subTaskIdList = new ArrayList<>();
     }

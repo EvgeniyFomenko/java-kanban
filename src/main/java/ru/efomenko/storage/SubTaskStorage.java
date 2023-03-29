@@ -1,4 +1,4 @@
-package ru.efomenko.service.storage;
+package ru.efomenko.storage;
 
 import ru.efomenko.model.Subtask;
 
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SubTaskStorage {
-    Map<Long, Subtask> subtaskMap;
+    private final Map<Long, Subtask> subtaskMap;
 
     public SubTaskStorage() {
         subtaskMap = new HashMap<>();

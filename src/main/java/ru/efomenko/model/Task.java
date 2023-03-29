@@ -1,16 +1,14 @@
 package ru.efomenko.model;
 
-import ru.efomenko.Main;
-
 import java.util.Objects;
 
 public class Task {
-    long id;
-    String name;
-    String text;
-    Main.STATUS status;
+    private long id;
+    private String name;
+    private String text;
+    private Status.STATUS status;
 
-    public Task(String name, String text, Main.STATUS status) {
+    public Task(String name, String text, Status.STATUS status) {
         this.name = name;
         this.text = text;
         this.status = status;
@@ -24,11 +22,11 @@ public class Task {
         this.id = id;
     }
 
-    public Main.STATUS getStatus() {
+    public Status.STATUS getStatus() {
         return status;
     }
 
-    public void setStatus(Main.STATUS status) {
+    public void setStatus(Status.STATUS status) {
         this.status = status;
     }
 

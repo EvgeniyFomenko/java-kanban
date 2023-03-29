@@ -1,6 +1,7 @@
 package ru.efomenko;
 
 import ru.efomenko.model.EpicTask;
+import ru.efomenko.model.Status;
 import ru.efomenko.model.Subtask;
 import ru.efomenko.model.Task;
 import ru.efomenko.service.CanbanManager;
@@ -10,23 +11,19 @@ import java.util.List;
 public class Main {
     static CanbanManager canbanManager;
 
-   public enum STATUS{
-        NEW,
-        IN_PROGRES,
-        DONE
-    }
+
 
     public static void main(String[] args) {
         canbanManager = new CanbanManager();
 
-        Task task = new Task("Сходить в магазин","В магазине купить продукты",STATUS.NEW);
+        Task task = new Task("Сходить в магазин","В магазине купить продукты",Status.STATUS.NEW);
         EpicTask epic = new EpicTask("Написать программу Канбан","Написать программу которая сохраняет " +
-                "задачи и их делит на категории",STATUS.NEW);
+                "задачи и их делит на категории", Status.STATUS.NEW);
         EpicTask epic1 = new EpicTask("Написать класс менеджер","В классе менеджер будет сосредоточена " +
-                "вся работа с задачами",STATUS.NEW);
-        Subtask subtask = new Subtask("Составить таблицу классов","",STATUS.NEW);
-        Subtask subtask1 = new Subtask("Составить список методов","",STATUS.NEW);
-        Subtask subtask2 = new Subtask("Запрограммировать методы","",STATUS.NEW);
+                "вся работа с задачами",Status.STATUS.NEW);
+        Subtask subtask = new Subtask("Составить таблицу классов","",Status.STATUS.NEW);
+        Subtask subtask1 = new Subtask("Составить список методов","",Status.STATUS.NEW);
+        Subtask subtask2 = new Subtask("Запрограммировать методы","",Status.STATUS.NEW);
 
         canbanManager.createTask(task);
         canbanManager.createEpicTask(epic1);

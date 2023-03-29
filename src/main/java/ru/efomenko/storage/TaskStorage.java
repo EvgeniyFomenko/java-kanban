@@ -1,4 +1,4 @@
-package ru.efomenko.service.storage;
+package ru.efomenko.storage;
 
 import ru.efomenko.model.Task;
 
