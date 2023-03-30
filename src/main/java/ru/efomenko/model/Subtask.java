@@ -3,29 +3,30 @@ package ru.efomenko.model;
 import java.util.Objects;
 
 public class Subtask extends Task {
-    private long idEpic;
+    private long epicId;
 
-    public Subtask(String name, String text, Status.STATUS status) {
+    public Subtask(long epicId, String name, String text, Status.STATUS status) {
         super(name, text,status);
+        this.epicId = epicId;
     }
 
-    public void setIdEpic(long idEpic){
-        this.idEpic = idEpic;
+    public void setEpicId(long epicId){
+        this.epicId = epicId;
     }
 
-    public long getIdEpic(){
-        return idEpic;
+    public long getEpicId(){
+        return epicId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), idEpic);
+        return Objects.hash(super.hashCode(), epicId);
     }
 
     @Override
     public String toString() {
         return "Subtask{" +
-                "idEpic=" + idEpic + super.toString()+
+                "idEpic=" + epicId + super.toString()+
                 '}';
     }
 }

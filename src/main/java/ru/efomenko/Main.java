@@ -11,8 +11,6 @@ import java.util.List;
 public class Main {
     static CanbanManager canbanManager;
 
-
-
     public static void main(String[] args) {
         canbanManager = new CanbanManager();
 
@@ -21,21 +19,24 @@ public class Main {
                 "задачи и их делит на категории", Status.STATUS.NEW);
         EpicTask epic1 = new EpicTask("Написать класс менеджер","В классе менеджер будет сосредоточена " +
                 "вся работа с задачами",Status.STATUS.NEW);
-        Subtask subtask = new Subtask("Составить таблицу классов","",Status.STATUS.NEW);
-        Subtask subtask1 = new Subtask("Составить список методов","",Status.STATUS.NEW);
-        Subtask subtask2 = new Subtask("Запрограммировать методы","",Status.STATUS.NEW);
+
 
         canbanManager.createTask(task);
-        canbanManager.createEpicTask(epic1);
-        canbanManager.createEpicTask(epic);
-        canbanManager.addSubtaskInEpicTask(epic1,subtask1);
-        canbanManager.addSubtaskInEpicTask(epic1,subtask2);
-        canbanManager.addSubtaskInEpicTask(epic,subtask);
+        long epic1Id = canbanManager.createEpicTask(epic1).getId();
+        long epicId = canbanManager.createEpicTask(epic).getId();
+        Subtask subtask = new Subtask(epicId,"Составить таблицу классов","",Status.STATUS.NEW);
+        Subtask subtask1 = new Subtask(epic1Id,"Составить список методов","",Status.STATUS.DONE);
+        Subtask subtask2 = new Subtask(epic1Id,"Запрограммировать методы","",Status.STATUS.NEW);
+        canbanManager.addSubtaskInEpicTask(subtask1);
+        canbanManager.addSubtaskInEpicTask(subtask2);
+        canbanManager.addSubtaskInEpicTask(subtask);
+
         print();
         System.out.println("---------------------------------------------------------------------");
 //        Task subtask3 =  canbanManager.getSubtaskById(4).putStatus(STATUS.DONE);
 //        Task subtask4 = canbanManager.getSubtaskById(5).putStatus(STATUS.DONE);
 //        canbanManager.putSubtask(epic1,(Subtask) subtask3); ;
+        canbanManager.deleteAllSubtask();
         print();
 
        /* System.out.println("task = " + task);

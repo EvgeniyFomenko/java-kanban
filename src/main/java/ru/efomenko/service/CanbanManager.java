@@ -35,10 +35,11 @@ public class CanbanManager {
         return taskStorage.getTaskById(id);
     }
 
-    public void createTask(Task task) {
+    public Task createTask(Task task) {
         idTask++;
         task.setId(idTask);
         taskStorage.saveTask(task);
+        return task;
     }
 
     public void updateTask(Task task) {
@@ -63,16 +64,17 @@ public class CanbanManager {
         return epicStorage.getEpicTaskHashMap().get(id);
     }
 
-    public void createEpicTask(EpicTask task) {
+    public EpicTask createEpicTask(EpicTask task) {
         idTask++;
         task.setId(idTask);
         setUpEpicStatus(task);
-        epicStorage.saveEpicTask(idTask, task);
+        epicStorage.saveEpicTask(task);
+        return task;
     }
 
     public void updateEpicTask(EpicTask task) {
         setUpEpicStatus(task);
-        epicStorage.saveEpicTask(task.getId(), task);
+        epicStorage.saveEpicTask(task);
     }
 
     public void deleteEpicTaskById(Long id) {
@@ -122,28 +124,25 @@ public class CanbanManager {
         return subtaskList;
     }
 
-    public Subtask getSubtaskById(long idTask) {
-        return subTaskStorage.getSubTaskById(idTask);
-    }
-
     public void deleteSubtaskById(long idTask) {
-        EpicTask epicTask = getEpicTaskById(subTaskStorage.getSubTaskById(idTask).getIdEpic());
+        EpicTask epicTask = getEpicTaskById(subTaskStorage.getSubTaskById(idTask).getEpicId());
+        epicTask.deleteSubtaskById(idTask);
         subTaskStorage.deleteSubtaskById(idTask);
         setUpEpicStatus(epicTask);
     }
 
-    public void addSubtaskInEpicTask(EpicTask epicTask, Subtask subtask) {
+    public void addSubtaskInEpicTask(Subtask subtask) {
         idTask++;
         subtask.setId(idTask);
-        subtask.setIdEpic(epicTask.getId());
+        EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
         epicTask.addSubTaskId(idTask);
         subTaskStorage.putSubtask(subtask);
         updateEpicTask(epicTask);
     }
 
-    public void updateSubtask(EpicTask epicTask, Subtask subtask) {
+    public void updateSubtask(Subtask subtask) {
         subTaskStorage.putSubtask(subtask);
-        updateEpicTask(epicTask);
+        updateEpicTask(epicStorage.getEpicTaskById(subtask.getEpicId()));
     }
 
     public List<Subtask> getSubtaskList() {
@@ -152,6 +151,10 @@ public class CanbanManager {
 
     public void deleteAllSubtask() {
         subTaskStorage = new SubTaskStorage();
+        for (EpicTask epicTask : epicStorage.getEpicTaskHashMap().values()){
+            epicTask.deleteAllSubtask();
+            setUpEpicStatus(epicTask);
+        }
     }
 
 }

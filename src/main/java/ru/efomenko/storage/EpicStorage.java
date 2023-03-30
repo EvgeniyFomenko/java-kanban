@@ -11,8 +11,8 @@ public class EpicStorage {
         epicTaskHashMap = new HashMap<>();
     }
 
-    public void saveEpicTask(Long id, EpicTask epicTask){
-        epicTaskHashMap.put(id,epicTask);
+    public void saveEpicTask( EpicTask epicTask) {
+        epicTaskHashMap.put(epicTask.getId(), epicTask);
 
     }
     public EpicTask getEpicTaskById(Long id){
