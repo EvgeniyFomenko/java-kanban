@@ -17,7 +17,6 @@ public class InMemoryTaskManager implements TaskManager {
     private TaskStorage taskStorage;
     private SubTaskStorage subTaskStorage;
     private long idTask;
-    private Task task;
     private final HistoryManager historyManager;
 
 
@@ -41,7 +40,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(long id) {
-        task = taskStorage.getTaskById(id);
+        Task task = taskStorage.getTaskById(id);
         historyManager.addTask(task);
         return taskStorage.getTaskById(id);
     }
@@ -78,9 +77,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public EpicTask getEpicTaskById(long id) {
-        task = epicStorage.getEpicTaskHashMap().get(id);
+        EpicTask task = epicStorage.getEpicTaskHashMap().get(id);
         historyManager.addTask(task);
-        return (EpicTask) task;
+        return task;
     }
 
     @Override
@@ -148,9 +147,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     public Subtask getSubTaskById(long id){
-        task = subTaskStorage.getSubTaskById(id);
+        Subtask task = subTaskStorage.getSubTaskById(id);
         historyManager.addTask(task);
-      return (Subtask) task;
+      return task;
     }
 
     @Override

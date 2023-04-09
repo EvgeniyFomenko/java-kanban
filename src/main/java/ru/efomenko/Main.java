@@ -34,16 +34,11 @@ public class Main {
         System.out.println(inMemoryTaskManager.getHistory().size()+" "+inMemoryTaskManager.getHistory().toString());
         print();
         System.out.println("---------------------------------------------------------------------");
-//        Task subtask3 =  canbanManager.getSubtaskById(4).putStatus(STATUS.DONE);
-//        Task subtask4 = canbanManager.getSubtaskById(5).putStatus(STATUS.DONE);
-//        canbanManager.putSubtask(epic1,(Subtask) subtask3); ;
 
         inMemoryTaskManager.deleteAllSubtask();
         print();
         System.out.println(inMemoryTaskManager.getHistory().size()+" "+inMemoryTaskManager.getHistory().toString());
-       /* System.out.println("task = " + task);
-        System.out.println("epic = " + epic);
-        System.out.println("epic1 = " + epic1);*/
+
     }
 
     public static void print(){
