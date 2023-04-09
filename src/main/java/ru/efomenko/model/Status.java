@@ -1,9 +1,8 @@
 package ru.efomenko.model;
 
-public class Status {
-    public enum STATUS{
+    public enum Status{
         NEW,
         IN_PROGRES,
         DONE
     }
-}
+

@@ -6,9 +6,9 @@ public class Task {
     private long id;
     private String name;
     private String text;
-    private Status.STATUS status;
+    private Status status;
 
-    public Task(String name, String text, Status.STATUS status) {
+    public Task(String name, String text, Status status) {
         this.name = name;
         this.text = text;
         this.status = status;
@@ -22,11 +22,11 @@ public class Task {
         this.id = id;
     }
 
-    public Status.STATUS getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(Status.STATUS status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
