@@ -11,6 +11,7 @@ import ru.efomenko.utility.Managers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
     private EpicStorage epicStorage;
@@ -41,7 +42,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(long id) {
         Task task = taskStorage.getTaskById(id);
-        historyManager.addTask(task);
+        historyManager.add(task);
         return taskStorage.getTaskById(id);
     }
 
@@ -61,6 +62,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTaskById(long id) {
         taskStorage.deleteTaskById(id);
+        historyManager.remove(id);
     }
 
     @Override
@@ -70,6 +72,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllEpicTasks() {
+        Map<Long, EpicTask> epicTaskMap = epicStorage.getEpicTaskHashMap();
+        for (Long id : epicTaskMap.keySet()){
+            historyManager.remove(id);
+        }
         epicStorage = new EpicStorage();
 
         deleteAllSubtask();
@@ -78,7 +84,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public EpicTask getEpicTaskById(long id) {
         EpicTask task = epicStorage.getEpicTaskHashMap().get(id);
-        historyManager.addTask(task);
+        historyManager.add(task);
         return task;
     }
 
@@ -103,6 +109,7 @@ public class InMemoryTaskManager implements TaskManager {
             deleteSubtaskById(idSubtask);
         }
         epicStorage.deleteEpicTaskById(id);
+        historyManager.remove(id);
     }
 
     private void setUpEpicStatus(EpicTask epicTask) {
@@ -148,7 +155,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     public Subtask getSubTaskById(long id){
         Subtask task = subTaskStorage.getSubTaskById(id);
-        historyManager.addTask(task);
+        historyManager.add(task);
       return task;
     }
 
@@ -158,6 +165,7 @@ public class InMemoryTaskManager implements TaskManager {
         epicTask.deleteSubtaskById(idTask);
         subTaskStorage.deleteSubtaskById(idTask);
         setUpEpicStatus(epicTask);
+        historyManager.remove(idTask);
     }
 
     @Override
@@ -186,6 +194,9 @@ public class InMemoryTaskManager implements TaskManager {
         subTaskStorage = new SubTaskStorage();
         for (EpicTask epicTask : epicStorage.getEpicTaskHashMap().values()){
             epicTask.deleteAllSubtask();
+            for (Long subtask : epicTask.getSubTaskIdList()){
+                historyManager.remove(subtask);
+            }
             setUpEpicStatus(epicTask);
         }
     }
