@@ -44,18 +44,18 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
 
         public void linkLast(Long id, E task) {
-            Node<E> n = new Node<>(this.last, task, null);
-            this.last = n;
+            Node<E> newNode = new Node<>(this.last, task, null);
+            this.last = newNode;
 
             if (first == null) {
-                this.first = n;
+                this.first = newNode;
             }
 
             if (historyHashMap.containsKey(id)) {
                 removeNode(historyHashMap.get(id));
                 historyHashMap.remove(id);
             }
-            historyHashMap.put(id, n);
+            historyHashMap.put(id, newNode);
         }
 
         public List<E> getTasks() {
@@ -68,15 +68,15 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
 
         public void removeNode(Node<E> node) {
-            Node<E> l = node.last;
-            Node<E> f = node.first;
+            Node<E> last = node.last;
+            Node<E> first = node.first;
 
-            if (l != null) {
-                l.first = f;
+            if (last != null) {
+                last.first = first;
             }
 
-            if (f != null) {
-                f.last = l;
+            if (first != null) {
+                first.last = last;
             }
         }
 
