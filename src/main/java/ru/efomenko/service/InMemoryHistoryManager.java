@@ -84,9 +84,10 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         public void remove(Long id) {
             Node node = historyHashMap.remove(id);
-            if (node != null) {
-                removeNode(historyHashMap.get(id));
+            if (node == null) {
+                return;
             }
+            removeNode(node);
         }
     }
 }
