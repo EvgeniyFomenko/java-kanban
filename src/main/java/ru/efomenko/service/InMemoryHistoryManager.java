@@ -33,9 +33,9 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     public static class CustomLinkedList<E> {
-        Map<Long, Node<E>> historyHashMap;
-        Node<E> last;
-        Node<E> first;
+        private final Map<Long, Node<E>> historyHashMap;
+        private Node<E> last;
+        private Node<E> first;
 
         public CustomLinkedList() {
             historyHashMap = new HashMap<>();
