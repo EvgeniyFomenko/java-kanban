@@ -32,7 +32,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         customLinkedList.remove(id);
     }
 
-    public class CustomLinkedList<E> {
+    public static class CustomLinkedList<E> {
         Map<Long, Node<E>> historyHashMap;
         Node<E> last;
         Node<E> first;
@@ -67,7 +67,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             return taskList;
         }
 
-        public void removeNode(Node<E> node) {
+        private void removeNode(Node<E> node) {
             Node<E> last = node.last;
             Node<E> first = node.first;
 
