@@ -46,13 +46,11 @@ public class InMemoryHistoryManager implements HistoryManager {
         public void linkLast(Long id, E task) {
             Node<E> newNode = new Node<>(this.last, task, null);
 
-
             if (first == null) {
                 this.first = newNode;
-            }else {
-                this.last = newNode;
             }
-
+            this.last = newNode;
+            
             if (historyHashMap.containsKey(id)) {
                 removeNode(historyHashMap.get(id));
                 historyHashMap.remove(id);
