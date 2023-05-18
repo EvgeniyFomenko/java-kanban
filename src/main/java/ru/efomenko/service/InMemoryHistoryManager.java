@@ -50,7 +50,7 @@ public class InMemoryHistoryManager implements HistoryManager {
                 this.first = newNode;
             }
             this.last = newNode;
-            
+
             if (historyHashMap.containsKey(id)) {
                 removeNode(historyHashMap.get(id));
                 historyHashMap.remove(id);

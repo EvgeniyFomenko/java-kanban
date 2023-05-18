@@ -18,7 +18,7 @@ public class InMemoryTaskManager implements TaskManager {
     private TaskStorage taskStorage;
     private SubTaskStorage subTaskStorage;
     private long idTask;
-    private final HistoryManager historyManager;
+    protected final HistoryManager historyManager;
 
 
     public InMemoryTaskManager()  {
@@ -122,7 +122,7 @@ public class InMemoryTaskManager implements TaskManager {
         int numbDone = 0;
 
         for (Long taskId : subTaskIdList) {
-            Subtask task = getSubTaskById(taskId);
+            Subtask task = subTaskStorage.getSubTaskById(taskId);
 
             switch (task.getStatus()) {
                 case NEW:
@@ -172,7 +172,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void addSubtaskInEpicTask(Subtask subtask) {
         idTask++;
         subtask.setId(idTask);
-        EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
+        EpicTask epicTask = epicStorage.getEpicTaskHashMap().get(subtask.getEpicId());
         epicTask.addSubTaskId(idTask);
         subTaskStorage.putSubtask(subtask);
         updateEpicTask(epicTask);
