@@ -36,6 +36,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
+        Map<Long, Task> taskMap = taskStorage.getTaskHashMap();
+        for (Long id : taskMap.keySet()){
+            historyManager.remove(id);
+        }
         taskStorage = new TaskStorage();
     }
 
@@ -106,7 +110,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteEpicTaskById(Long id) {
         for (Long idSubtask : getEpicTaskById(id).getSubTaskIdList()) {
-            deleteSubtaskById(idSubtask);
+            subTaskStorage.deleteSubtaskById(idSubtask);
+            historyManager.remove(idSubtask);
         }
         epicStorage.deleteEpicTaskById(id);
         historyManager.remove(id);

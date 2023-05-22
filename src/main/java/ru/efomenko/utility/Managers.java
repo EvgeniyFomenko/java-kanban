@@ -13,7 +13,7 @@ public class Managers {
         return new InMemoryHistoryManager();
     }
 
-    public static TaskManager getFileBackedTaskManager(){
-        return new FileBackedTasksManager(new File("rescources/fileSave.csv"));
+    public static TaskManager getFileBackedTaskManager(File file){
+        return FileBackedTasksManager.loadFromFile(file);
     }
 }

@@ -26,4 +26,12 @@ public class EpicTask extends Task {
     public void deleteAllSubtask(){
         subTaskIdList.removeAll(subTaskIdList);
     }
+
+    @Override
+    public String toString() {
+        return "EpicTask{" +
+                super.toString()+
+                " subTaskIdList=" + subTaskIdList +
+                '}';
+    }
 }
