@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
-    private EpicStorage epicStorage;
-    private TaskStorage taskStorage;
-    private SubTaskStorage subTaskStorage;
-    private long idTask;
+    protected EpicStorage epicStorage;
+    protected TaskStorage taskStorage;
+    protected SubTaskStorage subTaskStorage;
+    protected long idTask;
     protected final HistoryManager historyManager;
 
 
@@ -46,6 +46,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(long id) {
         Task task = taskStorage.getTaskById(id);
+        if(task == null){
+            return null;
+        }
         historyManager.add(task);
         return taskStorage.getTaskById(id);
     }
@@ -88,6 +91,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public EpicTask getEpicTaskById(long id) {
         EpicTask task = epicStorage.getEpicTaskHashMap().get(id);
+        if (task == null){
+            throw new IllegalArgumentException("EpicTask с таким id не существует");
+        }
         historyManager.add(task);
         return task;
     }
@@ -125,6 +131,7 @@ public class InMemoryTaskManager implements TaskManager {
         List<Long> subTaskIdList = epicTask.getSubTaskIdList();
         int numbNew = 0;
         int numbDone = 0;
+        int numbInProgress = 0;
 
         for (Long taskId : subTaskIdList) {
             Subtask task = subTaskStorage.getSubTaskById(taskId);
@@ -136,12 +143,15 @@ public class InMemoryTaskManager implements TaskManager {
                 case DONE:
                     numbDone++;
                     break;
+                case IN_PROGRES:
+                    numbInProgress++;
+                    break;
             }
         }
 
-        if (numbDone == 0) {
+        if (numbDone == 0 && numbInProgress == 0) {
             epicTask.setStatus(Status.NEW);
-        } else if (numbNew == 0) {
+        } else if (numbNew == 0 && numbInProgress == 0) {
             epicTask.setStatus(Status.DONE);
         } else {
             epicTask.setStatus(Status.IN_PROGRES);
@@ -158,15 +168,26 @@ public class InMemoryTaskManager implements TaskManager {
         return subtaskList;
     }
 
+    @Override
     public Subtask getSubTaskById(long id){
         Subtask task = subTaskStorage.getSubTaskById(id);
+        if(task == null){
+            return null;
+        }
         historyManager.add(task);
       return task;
     }
 
     @Override
-    public void deleteSubtaskById(long idTask) {
-        EpicTask epicTask = getEpicTaskById(getSubTaskById(idTask).getEpicId());
+    public void deleteSubtaskById(long idTask)  {
+        Subtask subtask = getSubTaskById(idTask);
+        if (subtask == null){
+            throw new IllegalArgumentException("Subtask с таким id не найден");
+        }
+        EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
+        if (epicTask == null){
+            throw new IllegalArgumentException("Epic с таким id не найден");
+        }
         epicTask.deleteSubtaskById(idTask);
         subTaskStorage.deleteSubtaskById(idTask);
         setUpEpicStatus(epicTask);
@@ -174,13 +195,17 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addSubtaskInEpicTask(Subtask subtask) {
+    public Subtask addSubtaskInEpicTask(Subtask subtask) {
         idTask++;
         subtask.setId(idTask);
         EpicTask epicTask = epicStorage.getEpicTaskHashMap().get(subtask.getEpicId());
+        if(epicTask == null){
+            return null;
+        }
         epicTask.addSubTaskId(idTask);
         subTaskStorage.putSubtask(subtask);
         updateEpicTask(epicTask);
+        return subtask;
     }
 
     @Override
@@ -199,7 +224,7 @@ public class InMemoryTaskManager implements TaskManager {
         subTaskStorage = new SubTaskStorage();
         for (EpicTask epicTask : epicStorage.getEpicTaskHashMap().values()){
             epicTask.deleteAllSubtask();
-            for (Long subtask : epicTask.getSubTaskIdList()){
+            for (long subtask : epicTask.getSubTaskIdList()){
                 historyManager.remove(subtask);
             }
             setUpEpicStatus(epicTask);

@@ -1,7 +1,7 @@
 package ru.efomenko.service;
 
-import ru.efomenko.ManagerLoaderException;
-import ru.efomenko.ManagerSaveException;
+import ru.efomenko.exceptions.ManagerLoaderException;
+import ru.efomenko.exceptions.ManagerSaveException;
 import ru.efomenko.model.*;
 
 import java.io.File;
@@ -66,11 +66,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             Task task = fromString(content[k]);
             taskMap.put(task.getId(), task);
             if (task instanceof EpicTask) {
-                fileBackedTasksManager.createEpicTask((EpicTask) task);
+                fileBackedTasksManager.epicStorage.saveEpicTask((EpicTask) task);
+//                fileBackedTasksManager.createEpicTask((EpicTask) task);
             } else if (task instanceof Subtask) {
-                fileBackedTasksManager.addSubtaskInEpicTask((Subtask) task);
+                fileBackedTasksManager.subTaskStorage.putSubtask((Subtask) task);
+//                fileBackedTasksManager.addSubtaskInEpicTask((Subtask) task);
             } else {
-                fileBackedTasksManager.createTask(task);
+                fileBackedTasksManager.taskStorage.saveTask(task);
+//                fileBackedTasksManager.createTask(task);
+            }
+            if (task.getId() > fileBackedTasksManager.idTask){
+                fileBackedTasksManager.idTask = task.getId();
             }
         }
         return fileBackedTasksManager;
@@ -98,15 +104,16 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
         switch (TypesTasks.valueOf(splitTask[1])) {
             case TASK:
                 Task task1 = new Task(splitTask[2], splitTask[4], Status.valueOf(splitTask[3]));
-                task1.setId(Long.valueOf(splitTask[0]));
+                task1.setId(Long.parseLong(splitTask[0]));
                 return task1;
             case EPIC:
                 EpicTask epicTask = new EpicTask(splitTask[2], splitTask[4], Status.valueOf(splitTask[3]));
-                epicTask.setId(Long.valueOf(splitTask[0]));
+                epicTask.setId(Long.parseLong(splitTask[0]));
                 return epicTask;
             case SUBTASK:
-                Subtask subtask = new Subtask(Long.valueOf(splitTask[5]), splitTask[2], splitTask[4], Status.valueOf(splitTask[3]));
-                subtask.setId(Long.valueOf(splitTask[0]));
+                Subtask subtask = new Subtask(Long.parseLong(splitTask[5]), splitTask[2], splitTask[4],
+                        Status.valueOf(splitTask[3]));
+                subtask.setId(Long.parseLong(splitTask[0]));
                 return subtask;
         }
         throw new RuntimeException("В функцию передан неизвестный тип задачи");
@@ -155,9 +162,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     @Override
-    public void addSubtaskInEpicTask(Subtask subtask) {
-        super.addSubtaskInEpicTask(subtask);
+    public Subtask addSubtaskInEpicTask(Subtask subtask) {
+        Subtask subtask1 = super.addSubtaskInEpicTask(subtask);
         save();
+        return subtask1;
     }
 
     @Override

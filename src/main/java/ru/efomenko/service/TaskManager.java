@@ -35,11 +35,13 @@ public interface TaskManager {
 
     void deleteSubtaskById(long idTask);
 
-    void addSubtaskInEpicTask(Subtask subtask);
+    Subtask addSubtaskInEpicTask(Subtask subtask);
 
     void updateSubtask(Subtask subtask);
 
     List<Subtask> getSubtaskList();
+
+    public Subtask getSubTaskById(long id);
 
     void deleteAllSubtask();
 
