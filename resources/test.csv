@@ -1,6 +1,6 @@
-id,type,name,status,description,epic
-3,TASK,Test task,NEW,description
-1,EPIC,Тест епик таск,NEW,описание
-2,SUBTASK,Test subtask,NEW,description,1
+id,type,name,status,description,epic,duration,startDate,endDateEpic
+3,TASK,Test task,NEW,description, ,0,null
+1,EPIC,Тест епик таск,NEW,описание, ,0,null,null
+2,SUBTASK,Test subtask,NEW,description,1,0,null
 
 1,2,3,

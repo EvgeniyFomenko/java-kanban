@@ -52,6 +52,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     public void deleteSubtask() {
         super.deleteSubtask();
     }
+
     @Test
     @Override
     public void updateTasks() {
@@ -62,5 +63,17 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     @Override
     public void history() {
         super.history();
+    }
+
+    @Test
+    @Override
+    void getSortTaskList() {
+        super.getSortTaskList();
+    }
+
+    @Test
+    @Override
+    void validationTime() {
+        super.validationTime();
     }
 }

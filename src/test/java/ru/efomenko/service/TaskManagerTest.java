@@ -7,9 +7,11 @@ import ru.efomenko.model.Status;
 import ru.efomenko.model.Subtask;
 import ru.efomenko.model.Task;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static java.util.Calendar.FEBRUARY;
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class TaskManagerTest<T extends TaskManager> {
@@ -189,5 +191,56 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.getTaskById(taskId);
 
         assertEquals(3, taskManager.getHistory().size(),"История отображается не верно");
+    }
+
+    @Test
+    void getSortTaskList(){
+        LocalDateTime dateTimeOfTwos = LocalDateTime.of(2023, FEBRUARY, 2, 22, 22);
+        Task task = new Task("Test task","description", Status.NEW,dateTimeOfTwos,10);
+        Task task1 = new Task("Test task","description", Status.NEW);
+        taskManager.createTask(task1);
+        final long taskId = taskManager.createTask(task).getId();
+        EpicTask epic1 = new EpicTask("Epic","Discr",Status.NEW);
+        long epicId = taskManager.createEpicTask(epic1).getId();
+        Subtask subtask1 = new Subtask(epicId,"Составить список методов","description",Status.NEW,
+                dateTimeOfTwos.plusHours(1),30);
+        Subtask subtask2 = new Subtask(epicId,"Запрограммировать методы","description",Status.DONE,
+                dateTimeOfTwos.plusHours(2),10);
+        Subtask subtask = new Subtask(epicId,"Составить таблицу классов","",Status.IN_PROGRES,
+                dateTimeOfTwos.plusHours(3),10);
+
+        taskManager.addSubtaskInEpicTask(subtask);
+        taskManager.addSubtaskInEpicTask(subtask1);
+        taskManager.addSubtaskInEpicTask(subtask2);
+
+        List<Task> taskList = taskManager.getPrioritizedTasks();
+
+        assertNotNull(taskList);
+    }
+
+    @Test
+    void validationTime(){
+        LocalDateTime dateTimeOfTwos = LocalDateTime.of(2023, FEBRUARY, 2, 22, 22);
+        Task task = new Task("Task","Discription",Status.NEW,dateTimeOfTwos,5);
+        Task task1 = new Task ("Task1","Description1",Status.NEW,dateTimeOfTwos,10);
+        taskManager.createTask(task);
+        assertThrows(IllegalArgumentException.class,()->{taskManager.createTask(task1);});
+
+        Task task2 = new Task("Task2","Description2",Status.NEW,dateTimeOfTwos.plusHours(1),5);
+        long taskid = taskManager.createTask(task2).getId();
+        int sizeTasks = taskManager.getTaskList().size();
+
+        assertEquals(2,sizeTasks);
+        Task taskSave = new Task("Task2","Description2",Status.NEW,dateTimeOfTwos,5);
+        taskSave.setId(taskid);
+
+        assertThrows(IllegalArgumentException.class,()->taskManager.updateTask(taskSave));
+
+        EpicTask epicTask = new EpicTask("Epic","Descr",Status.NEW);
+        long epicId = taskManager.createEpicTask(epicTask).getId();
+        Subtask subtask = new Subtask(epicId,"Subtask","Descr",Status.NEW,dateTimeOfTwos,10);
+        assertThrows(IllegalArgumentException.class,()->taskManager.addSubtaskInEpicTask(subtask));
+
+
     }
 }

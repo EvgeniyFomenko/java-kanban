@@ -9,9 +9,9 @@ import ru.efomenko.storage.SubTaskStorage;
 import ru.efomenko.storage.TaskStorage;
 import ru.efomenko.utility.Managers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     protected EpicStorage epicStorage;
@@ -19,12 +19,26 @@ public class InMemoryTaskManager implements TaskManager {
     protected SubTaskStorage subTaskStorage;
     protected long idTask;
     protected final HistoryManager historyManager;
+    protected TreeSet<Task> sortedTasks;
 
 
-    public InMemoryTaskManager()  {
+    public InMemoryTaskManager() {
         epicStorage = new EpicStorage();
         taskStorage = new TaskStorage();
         subTaskStorage = new SubTaskStorage();
+        sortedTasks = new TreeSet<>((e, e1) -> {
+            if (e.getStartTime() == null) {
+                return 1;
+            } else if (e1.getStartTime() == null) {
+                return -1;
+            } else if (e.getStartTime().isAfter(e1.getStartTime())) {
+                return 1;
+            } else if (e.getStartTime().isBefore(e1.getStartTime())) {
+                return -1;
+            } else {
+                return 0;
+            }
+        });
         historyManager = Managers.getDefaultHistoryManager();
 
     }
@@ -36,8 +50,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllTasks() {
+        getTaskList().forEach(sortedTasks::remove);
         Map<Long, Task> taskMap = taskStorage.getTaskHashMap();
-        for (Long id : taskMap.keySet()){
+        for (Long id : taskMap.keySet()) {
             historyManager.remove(id);
         }
         taskStorage = new TaskStorage();
@@ -46,7 +61,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(long id) {
         Task task = taskStorage.getTaskById(id);
-        if(task == null){
+        if (task == null) {
             return null;
         }
         historyManager.add(task);
@@ -55,19 +70,30 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task task) {
+        if (task.getStartTime() != null & validationTime(task)) {
+            throw new IllegalArgumentException("Задача с таким временем уже существует");
+        }
         idTask++;
         task.setId(idTask);
+
+        sortedTasks.add(task);
         taskStorage.saveTask(task);
         return task;
     }
 
     @Override
     public void updateTask(Task task) {
+        if (task.getStartTime() != null & validationTime(task)) {
+            throw new IllegalArgumentException("Задача с таким временем уже существует");
+        }
+        sortedTasks.remove(taskStorage.getTaskById(task.getId()));
+        sortedTasks.add(task);
         taskStorage.saveTask(task);
     }
 
     @Override
     public void deleteTaskById(long id) {
+        sortedTasks.remove(taskStorage.getTaskById(id));
         taskStorage.deleteTaskById(id);
         historyManager.remove(id);
     }
@@ -79,8 +105,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllEpicTasks() {
+        getEpicTaskList().forEach(sortedTasks::remove);
         Map<Long, EpicTask> epicTaskMap = epicStorage.getEpicTaskHashMap();
-        for (Long id : epicTaskMap.keySet()){
+        for (Long id : epicTaskMap.keySet()) {
             historyManager.remove(id);
         }
         epicStorage = new EpicStorage();
@@ -91,7 +118,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public EpicTask getEpicTaskById(long id) {
         EpicTask task = epicStorage.getEpicTaskHashMap().get(id);
-        if (task == null){
+        if (task == null) {
             throw new IllegalArgumentException("EpicTask с таким id не существует");
         }
         historyManager.add(task);
@@ -100,16 +127,29 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public EpicTask createEpicTask(EpicTask task) {
+        if (task.getStartTime() != null) {
+            if (validationTime(task)) {
+                throw new IllegalArgumentException("Задача с таким временем уже существует");
+            }
+        }
         idTask++;
         task.setId(idTask);
         setUpEpicStatus(task);
+        sortedTasks.add(task);
         epicStorage.saveEpicTask(task);
         return task;
     }
 
     @Override
     public void updateEpicTask(EpicTask task) {
+        if (task.getStartTime() != null) {
+            if (validationTime(task)) {
+                throw new IllegalArgumentException("Задача с таким временем уже существует");
+            }
+        }
         setUpEpicStatus(task);
+        sortedTasks.remove(epicStorage.getEpicTaskById(task.getId()));
+        sortedTasks.add(task);
         epicStorage.saveEpicTask(task);
     }
 
@@ -119,8 +159,49 @@ public class InMemoryTaskManager implements TaskManager {
             subTaskStorage.deleteSubtaskById(idSubtask);
             historyManager.remove(idSubtask);
         }
+        sortedTasks.remove(epicStorage.getEpicTaskById(id));
         epicStorage.deleteEpicTaskById(id);
         historyManager.remove(id);
+    }
+
+    private void setUpEpicEndTime(EpicTask epicTask) {
+
+        List<Long> subTaskIdList = epicTask.getSubTaskIdList();
+
+        LocalDateTime highDate = null;
+        LocalDateTime lowerDate = null;
+        Duration duration = Duration.ofMinutes(0);
+
+        for (Long taskId : subTaskIdList) {
+            Subtask task = subTaskStorage.getSubTaskById(taskId);
+            if (task.getStartTime() == null) {
+                continue;
+            }
+            duration = duration.plus(task.getDuration());
+
+
+            if (highDate == null) {
+                highDate = task.getStartTime();
+            }
+
+            if (lowerDate == null) {
+                lowerDate = task.getEndTime();
+            }
+
+            if (highDate.isAfter(task.getStartTime())) {
+                highDate = task.getStartTime();
+            }
+
+            if (lowerDate.isBefore(task.getEndTime())) {
+                System.out.println(task.getEndTime());
+                lowerDate = task.getEndTime();
+            }
+        }
+        epicTask.setDuration(duration.toMinutes());
+        epicTask.setStartTime(highDate);
+        epicTask.setEndTime(lowerDate);
+
+
     }
 
     private void setUpEpicStatus(EpicTask epicTask) {
@@ -128,6 +209,8 @@ public class InMemoryTaskManager implements TaskManager {
             epicTask.setStatus(Status.NEW);
             return;
         }
+        setUpEpicEndTime(epicTask);
+
         List<Long> subTaskIdList = epicTask.getSubTaskIdList();
         int numbNew = 0;
         int numbDone = 0;
@@ -135,7 +218,6 @@ public class InMemoryTaskManager implements TaskManager {
 
         for (Long taskId : subTaskIdList) {
             Subtask task = subTaskStorage.getSubTaskById(taskId);
-
             switch (task.getStatus()) {
                 case NEW:
                     numbNew++;
@@ -169,26 +251,27 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask getSubTaskById(long id){
+    public Subtask getSubTaskById(long id) {
         Subtask task = subTaskStorage.getSubTaskById(id);
-        if(task == null){
+        if (task == null) {
             return null;
         }
         historyManager.add(task);
-      return task;
+        return task;
     }
 
     @Override
-    public void deleteSubtaskById(long idTask)  {
+    public void deleteSubtaskById(long idTask) {
         Subtask subtask = getSubTaskById(idTask);
-        if (subtask == null){
+        if (subtask == null) {
             throw new IllegalArgumentException("Subtask с таким id не найден");
         }
         EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
-        if (epicTask == null){
+        if (epicTask == null) {
             throw new IllegalArgumentException("Epic с таким id не найден");
         }
         epicTask.deleteSubtaskById(idTask);
+        sortedTasks.remove(subTaskStorage.getSubTaskById(idTask));
         subTaskStorage.deleteSubtaskById(idTask);
         setUpEpicStatus(epicTask);
         historyManager.remove(idTask);
@@ -196,13 +279,19 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask addSubtaskInEpicTask(Subtask subtask) {
+        if (subtask.getStartTime() != null) {
+            if (validationTime(subtask)) {
+                throw new IllegalArgumentException("Задача с таким временем уже существует");
+            }
+        }
         idTask++;
         subtask.setId(idTask);
         EpicTask epicTask = epicStorage.getEpicTaskHashMap().get(subtask.getEpicId());
-        if(epicTask == null){
+        if (epicTask == null) {
             return null;
         }
         epicTask.addSubTaskId(idTask);
+        sortedTasks.add(subtask);
         subTaskStorage.putSubtask(subtask);
         updateEpicTask(epicTask);
         return subtask;
@@ -211,6 +300,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubtask(Subtask subtask) {
         subTaskStorage.putSubtask(subtask);
+        sortedTasks.add(subtask);
         updateEpicTask(epicStorage.getEpicTaskById(subtask.getEpicId()));
     }
 
@@ -221,10 +311,11 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllSubtask() {
+        getSubtaskList().forEach(sortedTasks::remove);
         subTaskStorage = new SubTaskStorage();
-        for (EpicTask epicTask : epicStorage.getEpicTaskHashMap().values()){
+        for (EpicTask epicTask : epicStorage.getEpicTaskHashMap().values()) {
             epicTask.deleteAllSubtask();
-            for (long subtask : epicTask.getSubTaskIdList()){
+            for (long subtask : epicTask.getSubTaskIdList()) {
                 historyManager.remove(subtask);
             }
             setUpEpicStatus(epicTask);
@@ -232,8 +323,29 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public List<Task> getHistory(){
-       return historyManager.getHistory();
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
+    @Override
+    public List<Task> getPrioritizedTasks() {
+        return Collections.list(Collections.enumeration(sortedTasks));
+    }
+
+    protected boolean validationTime(Task task) {
+        return getPrioritizedTasks().stream().anyMatch((e) -> {
+                    if (task instanceof EpicTask && e instanceof Subtask || e instanceof EpicTask && task instanceof Subtask) {
+                        return false;
+                    }
+                    if (task.getId() == e.getId()) {
+                        return false;
+                    }
+                    if (e.getStartTime() == null || task.getStartTime() == null) {
+                        return false;
+                    }
+                    return e.getStartTime().isEqual(task.getStartTime()) || e.getStartTime().isAfter(task.getStartTime()) &&
+                            e.getEndTime().isBefore(task.getEndTime()) || e.getEndTime().isEqual(task.getEndTime());
+                }
+        );
+    }
 }
