@@ -1,5 +1,6 @@
 package ru.efomenko.service;
 
+import ru.efomenko.exceptions.TasksTimeValidationException;
 import ru.efomenko.model.EpicTask;
 import ru.efomenko.model.Status;
 import ru.efomenko.model.Subtask;
@@ -70,8 +71,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task task) {
-        if (task.getStartTime() != null & validationTime(task)) {
-            throw new IllegalArgumentException("Задача с таким временем уже существует");
+        if(!Objects.isNull(task.getStartTime())) {
+            if ( validationTime(task)){
+                throw new TasksTimeValidationException("Задача с таким временем уже существует");
+            }
         }
         idTask++;
         task.setId(idTask);
@@ -84,7 +87,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (task.getStartTime() != null & validationTime(task)) {
-            throw new IllegalArgumentException("Задача с таким временем уже существует");
+            throw new TasksTimeValidationException("Задача с таким временем уже существует");
         }
         sortedTasks.remove(taskStorage.getTaskById(task.getId()));
         sortedTasks.add(task);
@@ -127,11 +130,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public EpicTask createEpicTask(EpicTask task) {
-        if (task.getStartTime() != null) {
-            if (validationTime(task)) {
-                throw new IllegalArgumentException("Задача с таким временем уже существует");
-            }
-        }
         idTask++;
         task.setId(idTask);
         setUpEpicStatus(task);
@@ -142,11 +140,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpicTask(EpicTask task) {
-        if (task.getStartTime() != null) {
-            if (validationTime(task)) {
-                throw new IllegalArgumentException("Задача с таким временем уже существует");
-            }
-        }
         setUpEpicStatus(task);
         sortedTasks.remove(epicStorage.getEpicTaskById(task.getId()));
         sortedTasks.add(task);
@@ -264,11 +257,11 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubtaskById(long idTask) {
         Subtask subtask = getSubTaskById(idTask);
         if (subtask == null) {
-            throw new IllegalArgumentException("Subtask с таким id не найден");
+           return;
         }
         EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
         if (epicTask == null) {
-            throw new IllegalArgumentException("Epic с таким id не найден");
+            return;
         }
         epicTask.deleteSubtaskById(idTask);
         sortedTasks.remove(subTaskStorage.getSubTaskById(idTask));
@@ -281,7 +274,7 @@ public class InMemoryTaskManager implements TaskManager {
     public Subtask addSubtaskInEpicTask(Subtask subtask) {
         if (subtask.getStartTime() != null) {
             if (validationTime(subtask)) {
-                throw new IllegalArgumentException("Задача с таким временем уже существует");
+                throw new TasksTimeValidationException("Задача с таким временем уже существует");
             }
         }
         idTask++;

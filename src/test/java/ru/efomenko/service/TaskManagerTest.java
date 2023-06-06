@@ -136,8 +136,6 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteSubtaskById(subtaskId);
         int subtaskListSize = taskManager.getSubtaskList().size();
         assertEquals(0,subtaskListSize,"Subtask не удалился");
-        assertThrows(IllegalArgumentException.class,()->taskManager.deleteSubtaskById(55));
-
 
         EpicTask epicTask1 = new EpicTask("Epic", "sdfsd",Status.NEW);
         long epicId1 = taskManager.createEpicTask(epicTask).getId();
