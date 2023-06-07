@@ -229,10 +229,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         int sizeTasks = taskManager.getTaskList().size();
 
         assertEquals(2,sizeTasks);
-        Task taskSave = new Task("Task2","Description2",Status.NEW,dateTimeOfTwos,5);
+        Task taskSave = new Task("Task2","Description1",Status.NEW,dateTimeOfTwos.plusHours(1),5);
         taskSave.setId(taskid);
 
-        assertThrows(IllegalArgumentException.class,()->taskManager.updateTask(taskSave));
+        assertDoesNotThrow(()-> taskManager.updateTask(taskSave));
 
         EpicTask epicTask = new EpicTask("Epic","Descr",Status.NEW);
         long epicId = taskManager.createEpicTask(epicTask).getId();

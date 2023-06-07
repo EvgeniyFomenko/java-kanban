@@ -71,10 +71,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task createTask(Task task) {
-        if(!Objects.isNull(task.getStartTime())) {
-            if ( validationTime(task)){
-                throw new TasksTimeValidationException("Задача с таким временем уже существует");
-            }
+        if (!isTaskValid(task)) {
+            throw new TasksTimeValidationException("Задача с таким временем уже существует");
         }
         idTask++;
         task.setId(idTask);
@@ -86,7 +84,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        if (task.getStartTime() != null & validationTime(task)) {
+        if (!isTaskValid(task)) {
             throw new TasksTimeValidationException("Задача с таким временем уже существует");
         }
         sortedTasks.remove(taskStorage.getTaskById(task.getId()));
@@ -133,7 +131,6 @@ public class InMemoryTaskManager implements TaskManager {
         idTask++;
         task.setId(idTask);
         setUpEpicStatus(task);
-        sortedTasks.add(task);
         epicStorage.saveEpicTask(task);
         return task;
     }
@@ -141,8 +138,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpicTask(EpicTask task) {
         setUpEpicStatus(task);
-        sortedTasks.remove(epicStorage.getEpicTaskById(task.getId()));
-        sortedTasks.add(task);
         epicStorage.saveEpicTask(task);
     }
 
@@ -152,15 +147,12 @@ public class InMemoryTaskManager implements TaskManager {
             subTaskStorage.deleteSubtaskById(idSubtask);
             historyManager.remove(idSubtask);
         }
-        sortedTasks.remove(epicStorage.getEpicTaskById(id));
         epicStorage.deleteEpicTaskById(id);
         historyManager.remove(id);
     }
 
     private void setUpEpicEndTime(EpicTask epicTask) {
-
         List<Long> subTaskIdList = epicTask.getSubTaskIdList();
-
         LocalDateTime highDate = null;
         LocalDateTime lowerDate = null;
         Duration duration = Duration.ofMinutes(0);
@@ -257,7 +249,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubtaskById(long idTask) {
         Subtask subtask = getSubTaskById(idTask);
         if (subtask == null) {
-           return;
+            return;
         }
         EpicTask epicTask = getEpicTaskById(subtask.getEpicId());
         if (epicTask == null) {
@@ -272,11 +264,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask addSubtaskInEpicTask(Subtask subtask) {
-        if (subtask.getStartTime() != null) {
-            if (validationTime(subtask)) {
+            if (!isTaskValid(subtask)) {
                 throw new TasksTimeValidationException("Задача с таким временем уже существует");
             }
-        }
         idTask++;
         subtask.setId(idTask);
         EpicTask epicTask = epicStorage.getEpicTaskHashMap().get(subtask.getEpicId());
@@ -325,20 +315,20 @@ public class InMemoryTaskManager implements TaskManager {
         return Collections.list(Collections.enumeration(sortedTasks));
     }
 
-    protected boolean validationTime(Task task) {
-        return getPrioritizedTasks().stream().anyMatch((e) -> {
-                    if (task instanceof EpicTask && e instanceof Subtask || e instanceof EpicTask && task instanceof Subtask) {
+    protected boolean isTaskValid(Task task) {
+        if(task.getStartTime() == null){
+            return true;
+        }
+        return getPrioritizedTasks().stream().noneMatch((e) -> {
+                    if (e.getId() == task.getId()){
                         return false;
                     }
-                    if (task.getId() == e.getId()) {
-                        return false;
-                    }
-                    if (e.getStartTime() == null || task.getStartTime() == null) {
+                    if (e.getStartTime() == null) {
                         return false;
                     }
                     return e.getStartTime().isEqual(task.getStartTime()) || e.getStartTime().isAfter(task.getStartTime()) &&
                             e.getEndTime().isBefore(task.getEndTime()) || e.getEndTime().isEqual(task.getEndTime());
                 }
         );
-    }
+        }
 }
