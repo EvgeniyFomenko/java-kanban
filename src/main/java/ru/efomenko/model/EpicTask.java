@@ -32,7 +32,7 @@ public class EpicTask extends Task {
     }
 
     public void deleteAllSubtask(){
-        subTaskIdList.removeAll(subTaskIdList);
+        subTaskIdList.clear();
     }
 
     public LocalDateTime getEndTime(){

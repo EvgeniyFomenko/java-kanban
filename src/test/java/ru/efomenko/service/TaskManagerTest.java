@@ -106,7 +106,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         taskManager.deleteEpicTaskById(taskId);
 
-        assertThrows(IllegalArgumentException.class,()->taskManager.getEpicTaskById(taskId));
+        assertNull(taskManager.getEpicTaskById(taskId));
 
         taskManager.createEpicTask(task);
         taskManager.deleteAllEpicTasks();

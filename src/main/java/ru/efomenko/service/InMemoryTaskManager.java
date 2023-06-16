@@ -120,7 +120,7 @@ public class InMemoryTaskManager implements TaskManager {
     public EpicTask getEpicTaskById(long id) {
         EpicTask task = epicStorage.getEpicTaskHashMap().get(id);
         if (task == null) {
-            throw new IllegalArgumentException("EpicTask с таким id не существует");
+            return null;
         }
         historyManager.add(task);
         return task;

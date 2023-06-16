@@ -65,13 +65,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             }
 
             Task task = fromString(content[k]);
-            fileBackedTasksManager.sortedTasks.add(task);
+
             taskMap.put(task.getId(), task);
             if (task instanceof EpicTask) {
                 fileBackedTasksManager.epicStorage.saveEpicTask((EpicTask) task);
             } else if (task instanceof Subtask) {
+                fileBackedTasksManager.sortedTasks.add(task);
                 fileBackedTasksManager.subTaskStorage.putSubtask((Subtask) task);
             } else {
+                fileBackedTasksManager.sortedTasks.add(task);
                 fileBackedTasksManager.taskStorage.saveTask(task);
             }
             if (task.getId() > fileBackedTasksManager.idTask) {
@@ -132,6 +134,19 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     public void save() {
+        Path path = file.toPath();
+        try {
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+            Files.createFile(path);
+            Files.writeString(path, getSerializeTask(), StandardCharsets.UTF_8);
+        } catch (IOException io) {
+            throw new ManagerSaveException("Ошибка при создании или записи файла");
+        }
+    }
+
+    protected String getSerializeTask(){
         StringBuilder saveString = new StringBuilder("id,type,name,status,description,epic,duration,startDate," +
                 "endDateEpic\n");
         for (Task task : getTaskList()) {
@@ -146,16 +161,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
             saveString.append(toString(task)).append("\n");
         }
         saveString.append("\n").append(historyToString(historyManager));
-        Path path = file.toPath();
-        try {
-            if (Files.exists(path)) {
-                Files.delete(path);
-            }
-            Files.createFile(path);
-            Files.writeString(path, saveString, StandardCharsets.UTF_8);
-        } catch (IOException io) {
-            throw new ManagerSaveException("Ошибка при создании или записи файла");
-        }
+
+        return saveString.toString();
     }
 
     @Override
