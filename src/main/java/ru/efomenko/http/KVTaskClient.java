@@ -1,4 +1,4 @@
-package ru.efomenko;
+package ru.efomenko.http;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,13 +10,12 @@ import java.util.Objects;
 public class KVTaskClient {
     private final URI uri;
     private String token;
-    HttpRequest httpRequest;
-    HttpClient httpClient;
+    private final HttpClient httpClient;
 
     public KVTaskClient(URI url) throws IOException, InterruptedException {
         uri = url;
         httpClient = HttpClient.newHttpClient();
-        httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(URI.create(uri + "/register"))
                 .build();
@@ -31,20 +30,20 @@ public class KVTaskClient {
     }
 
     public void put(String key, String json) throws IOException, InterruptedException {
-        httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                .uri(URI.create(uri+"/save/"+key+"?API_TOKEN="+token)).build();
-        HttpResponse<String> response = httpClient.send(httpRequest,HttpResponse.BodyHandlers.ofString());
+                .uri(URI.create(uri + "/save/" + key + "?API_TOKEN=" + token)).build();
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         System.out.println(response.statusCode());
     }
 
     public String load(String key) throws IOException, InterruptedException {
-        httpRequest = HttpRequest.newBuilder()
+        HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
-                .uri(URI.create(uri+"/load/"+key+"?API_TOKEN="+token)).build();
+                .uri(URI.create(uri + "/load/" + key + "?API_TOKEN=" + token)).build();
 
-        HttpResponse<String> response = httpClient.send(httpRequest,HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
 

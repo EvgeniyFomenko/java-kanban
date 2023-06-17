@@ -1,6 +1,6 @@
 package ru.efomenko.service;
 
-import ru.efomenko.KVTaskClient;
+import ru.efomenko.http.KVTaskClient;
 import ru.efomenko.model.EpicTask;
 import ru.efomenko.model.Subtask;
 import ru.efomenko.model.Task;
@@ -13,16 +13,13 @@ import java.util.List;
 import java.util.Map;
 
 public class HttpTaskManager extends FileBackedTasksManager{
-    KVTaskClient kvTaskClient;
-    String key;
+    private final KVTaskClient kvTaskClient;
+    private final String key;
 
     public HttpTaskManager(URI url) throws IOException, InterruptedException {
-        super(new File("resources/test.csv"));
 
         kvTaskClient = new KVTaskClient(url);
         key = kvTaskClient.getToken();
-
-
     }
 
     public HttpTaskManager(URI url,String token) throws IOException, InterruptedException {

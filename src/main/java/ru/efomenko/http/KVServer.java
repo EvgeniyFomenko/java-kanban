@@ -1,4 +1,4 @@
-package ru.efomenko;
+package ru.efomenko.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -14,12 +14,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Постман: https://www.getpostman.com/collections/a83b61d9e1c81c10575c
  */
 public class KVServer {
-    public static final int PORT = 8078;
+    private final int PORT ;
     private final String apiToken;
     private final HttpServer server;
     private final Map<String, String> data = new HashMap<>();
 
-    public KVServer() throws IOException {
+    public KVServer(int port) throws IOException {
+        this.PORT = port;
         apiToken = generateApiToken();
         server = HttpServer.create(new InetSocketAddress("localhost", PORT), 0);
         server.createContext("/register", this::register);

@@ -13,24 +13,22 @@ import ru.efomenko.model.EpicTask;
 import ru.efomenko.model.Subtask;
 import ru.efomenko.model.Task;
 import ru.efomenko.service.TaskManager;
-import ru.efomenko.utility.Managers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class TaskHandler implements HttpHandler {
-    String DEFAULT_CHARSET;
-    TaskManager fileBackedTasksManager;
-    Gson gson;
+    private final String DEFAULT_CHARSET;
+    private final TaskManager fileBackedTasksManager;
+    private final Gson gson;
 
-    public TaskHandler() {
-        fileBackedTasksManager = Managers.getHttpTaskManager(URI.create("http://localhost:8078"));
+    public TaskHandler(TaskManager taskManager) {
+        fileBackedTasksManager = taskManager;
         DEFAULT_CHARSET = "UTF-8";
         gson = new GsonBuilder()
                 .serializeNulls()
@@ -47,16 +45,16 @@ public class TaskHandler implements HttpHandler {
 
         switch (endpoint) {
             case GET_HISTORY:
-                handleHistory(exchange);
+                handleGetHistory(exchange);
                 break;
             case GET_TASK:
-                handleTask(exchange);
+                handleGetTask(exchange);
                 break;
             case GET_EPIC:
-                handleEpic(exchange);
+                handleGetEpic(exchange);
                 break;
             case GET_SUBTASK:
-                handleSubtask(exchange);
+                handleGetSubtask(exchange);
                 break;
             case POST_TASK:
                 taskPostHandle(exchange);
@@ -80,23 +78,23 @@ public class TaskHandler implements HttpHandler {
                 writeResponse(exchange, "Неизвстный запрос", 404);
                 break;
             case GET_TASKS:
-                handlePrioritizeTasks(exchange);
+                handleGetPrioritizeTasks(exchange);
                 break;
 
         }
     }
 
-    public void handlePrioritizeTasks(HttpExchange exchange) throws IOException {
+    public void handleGetPrioritizeTasks(HttpExchange exchange) throws IOException {
         String prioritizeTasks = gson.toJson(fileBackedTasksManager.getPrioritizedTasks());
         writeResponse(exchange, prioritizeTasks, 200);
     }
 
-    public void handleHistory(HttpExchange exchange) throws IOException {
+    public void handleGetHistory(HttpExchange exchange) throws IOException {
         String history = gson.toJson(fileBackedTasksManager.getHistory());
         writeResponse(exchange, history, 200);
     }
 
-    public void handleTask(HttpExchange exchange) throws IOException {
+    public void handleGetTask(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
         String task;
 
@@ -237,7 +235,7 @@ public class TaskHandler implements HttpHandler {
         }
     }
 
-    public void handleEpic(HttpExchange exchange) throws IOException {
+    public void handleGetEpic(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getQuery();
         String task;
         if (Objects.nonNull(path)) {
@@ -252,7 +250,7 @@ public class TaskHandler implements HttpHandler {
         }
     }
 
-    public void handleSubtask(HttpExchange exchange) throws IOException {
+    public void handleGetSubtask(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getQuery();
         String task;
         if (Objects.nonNull(path)) {

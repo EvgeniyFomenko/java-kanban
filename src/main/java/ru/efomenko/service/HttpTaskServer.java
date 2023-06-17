@@ -7,14 +7,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class HttpTaskServer {
-    HttpServer httpServer;
+    private final HttpServer httpServer;
+    private final TaskManager taskManager;
 
-    public HttpTaskServer() throws IOException {
-        httpServer = HttpServer.create(new InetSocketAddress(8080) ,0);
+    public HttpTaskServer(int port, TaskManager taskManager) throws IOException {
+        httpServer = HttpServer.create(new InetSocketAddress(port) ,0);
+        this.taskManager = taskManager;
     }
 
     public void start(){
-        httpServer.createContext("/tasks/",new TaskHandler());
+        httpServer.createContext("/tasks/",new TaskHandler(taskManager));
         httpServer.start();
         System.out.println("Сервер запущен");
     }

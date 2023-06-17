@@ -21,6 +21,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     public FileBackedTasksManager(File fileName) {
         this.file = fileName;
     }
+    public FileBackedTasksManager(){
+        Path defaultPath = Path.of("resource/default.csv");
+        file = defaultPath.toFile();
+    };
 
     public static List<Long> historyFromString(String value) {
         String[] histry = value.split(",");

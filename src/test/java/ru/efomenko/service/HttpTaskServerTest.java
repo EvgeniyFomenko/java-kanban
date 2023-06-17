@@ -6,13 +6,14 @@ import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.efomenko.KVServer;
 import ru.efomenko.handlers.adapters.DurationAdapter;
 import ru.efomenko.handlers.adapters.LocalDateTimeAdapter;
+import ru.efomenko.http.KVServer;
 import ru.efomenko.model.EpicTask;
 import ru.efomenko.model.Status;
 import ru.efomenko.model.Subtask;
 import ru.efomenko.model.Task;
+import ru.efomenko.utility.Managers;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -38,9 +39,12 @@ public class HttpTaskServerTest {
 
     @BeforeEach
     public void startServer() throws IOException {
-        kvServer = new KVServer();
+        int kvPort = 8078;
+        kvServer = new KVServer(kvPort);
         kvServer.start();
-        taskServer = new HttpTaskServer();
+        int port = 8080;
+        TaskManager taskManager = Managers.getHttpTaskManager(URI.create("http://localhost:8078"));
+        taskServer = new HttpTaskServer(port, taskManager);
         taskServer.start();
         httpClient = HttpClient.newHttpClient();
         gson = new GsonBuilder()
@@ -53,7 +57,7 @@ public class HttpTaskServerTest {
 
     @AfterEach
     public void stopServer(){
-        taskServer.httpServer.stop(1);
+        taskServer.stop(1);
         kvServer.stop(1);
         System.out.println("Сервер выключен");
     }

@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.efomenko.handlers.adapters.DurationAdapter;
 import ru.efomenko.handlers.adapters.LocalDateTimeAdapter;
+import ru.efomenko.http.KVServer;
+import ru.efomenko.http.KVTaskClient;
 import ru.efomenko.model.Status;
 import ru.efomenko.model.Task;
 
@@ -26,7 +28,8 @@ class KVServerTest {
 
     @BeforeEach
     public void start() throws IOException, InterruptedException {
-        kvServer =new KVServer();
+        int kvPort = 8078;
+        kvServer =new KVServer(kvPort);
         kvServer.start();
 
         kvTaskClient = new KVTaskClient(URI.create("http://localhost:8078"));
